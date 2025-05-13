@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parqueadero El Tesoro JF</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .header p {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        select, input[type="datetime-local"], button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            padding: 10px;
+            background-color: #f8f8f8;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Parqueadero El Tesoro JF</h1>
+        <p>DIR.: CLL 79 D BIS 18F 59</p>
+        <p>TELEFONO: 3222117069</p>
+    </div>
+    
+    <h2>Calculadora de Parqueadero</h2>
+    <form id="parqueaderoForm">
+        <label for="vehiculo">Tipo de Vehículo:</label>
+        <select id="vehiculo">
+            <option value="DOBLE TROQUE">DOBLE TROQUE</option>
+            <option value="CAMION XL">CAMION XL</option>
+            <option value="BUS XL">BUS XL</option>
+            <option value="CAMION">CAMION</option>
+            <option value="BUSETA">BUSETA</option>
+            <option value="CAMION XS">CAMION XS</option>
+            <option value="BUSETA XS">BUSETA XS</option>
+            <option value="MINIVAN">MINIVAN</option>
+            <option value="CAMIONETA">CAMIONETA</option>
+            <option value="AUTOMOVIL">AUTOMOVIL</option>
+            <option value="MOTO">MOTO</option>
+            <option value="OTROS">OTROS</option>
+        </select>
+
+        <label for="ingreso">Fecha y Hora de Ingreso:</label>
+        <input type="datetime-local" id="ingreso" required>
+
+        <button type="button" onclick="calcularPrecio()">Calcular Precio</button>
+    </form>
+
+    <div id="resultado" class="result" style="display:none;">
+        <h3>Resultado:</h3>
+        <p id="precio"></p>
+        <p id="dias"></p>
+    </div>
+</div>
+
+<script>
+    const tarifasReducidas = {
+        "DOBLE TROQUE": 20000,  
+        "CAMION XL": 1700,
+        "BUS XL": 1700,
+        "CAMION": 1400,
+        "BUSETA": 1400,
+        "CAMION XS": 1200,
+        "BUSETA XS": 1200,
+        "MINIVAN": 1000,
+        "CAMIONETA": 1000,
+        "AUTOMOVIL": 10000,
+        "MOTO": 800,
+        "OTROS": 800
+    };
+
+    const tarifasNormales = {
+        "DOBLE TROQUE": 1500,  
+        "CAMION XL": 1300,
+        "BUS XL": 1300,
+        "CAMION": 1250,
+        "BUSETA": 1166.67,
+        "CAMION XS": 1000,
+        "BUSETA XS": 1000,
+        "MINIVAN": 833.33,
+        "CAMIONETA": 833.33,
+        "AUTOMOVIL": 666.67,
+        "MOTO": 416.67,
+        "OTROS": 416.67
+    };
+
+    function calcularPrecio() {
+        const vehiculo = document.getElementById("vehiculo").value;
+        const fechaIngreso = new Date(document.getElementById("ingreso").value);
+        if (!fechaIngreso.getTime()) {
+            alert("Por favor, ingrese una fecha y hora válidas.");
+            return;
+        }
+
+        const now = new Date();
+        const diferencia = now - fechaIngreso;
+        const horasEstacionado = Math.ceil(diferencia / (1000 * 3600)); // Convierte de milisegundos a horas
+        const diasEstacionado = Math.floor(horasEstacionado / 24); // Calcula el número de días completos
+        const horasRestantes = horasEstacionado % 24; // Horas sobrantes después de contar los días
+
+        const tarifaReducida = tarifasReducidas[vehiculo] || tarifasReducidas["OTROS"];
+        const tarifaNormal = tarifasNormales[vehiculo] || tarifasNormales["OTROS"];
+
+        let precioTotal = 0;
+
+        // Calcula el precio para las primeras 5 horas con tarifa reducida
+        if (horasRestantes <= 5) {
+            precioTotal = tarifaReducida * horasRestantes;
+        } else {
+            precioTotal = (tarifaReducida * 5) + (tarifaNormal * (horasRestantes - 5));
+        }
+
+        // Añadir los días completos a la tarifa normal
+        precioTotal += diasEstacionado * tarifaNormal * 24;
+
+        document.getElementById("resultado").style.display = "block";
+        document.getElementById("precio").innerHTML = `El precio total por ${horasEstacionado} horas (o ${diasEstacionado} días y ${horasRestantes} horas) es: $${precioTotal.toFixed(2)}`;
+        document.getElementById("dias").innerHTML = `Total de días estacionado: ${diasEstacionado}`;
+    }
+</script>
+
+</body>
+</html>
